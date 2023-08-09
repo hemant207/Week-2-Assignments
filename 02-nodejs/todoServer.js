@@ -42,8 +42,96 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 
+let todos = [{
+  "title":"first thing",
+  "description":"This is my first todo",
+  "completed": "true",
+  "id":1
+},{
+  "title":"Laundry",
+  "description":"time to do laundry",
+  "completed": "false",
+  "id":2
+},{
+  "title":"Me time",
+  "description":"GO out and live fully",
+  "completed": "false",
+  "id":3
+}]
+
 const app = express();
 
 app.use(bodyParser.json());
+
+// creating endpoint get/todos for retrving all todos
+app.get('/todos',(req,res)=>{
+  res.send(todos);
+  res.status(200);
+})
+
+// creating endpoint for retriving perticuler todo
+app.get('/todos/:id',(req,res)=>{
+  const todos_id = req.params.id;
+  let data = todos.find(todo => todo.id==todos_id);
+
+  console.log(typeof(data));
+  if(typeof(data)=='undefined'){
+    res.status(404);
+    res.send("no such task found")
+  }else{
+    res.send(data);
+    res.status(200);
+  }
+
+})
+
+// endpoint for creating new todo task
+app.post('/todos',(req,res)=>{
+  let data = req.body;
+  todos.push(data);
+  console.log(todos);
+  res.send({"new task added":data})
+  res.status(201);
+
+})
+
+//endpoit for updating task
+app.put("/todos/:id",(req,res)=>{
+  let org_data = todos.findIndex(todo=>todo.id==req.params.id);
+
+
+  if(typeof(org_data!='undefined')){
+    let new_data = req.body;
+    todos[org_data] = new_data;
+    console.log(todos[org_data]);
+    res.send(todos.find(todo=>todo.id==req.params.id))
+    res.status(200);
+  }else{
+    res.status(404);
+    res.send("no such task found")
+  }
+  
+})
+
+//endpoint for deleting task
+app.delete("/todos/:id",(req,res)=>{
+  const del_data = todos.find(todo=>todo.id==req.params.id);
+
+
+  if(typeof(del_data)!='undefined'){
+    todos = todos.filter(todo=>todo.id!=req.params.id);
+    console.log(todos);
+    res.send({"task removed":del_data});
+    res.status(200);
+  }else{
+    res.status(404);
+    res.send("no such task found")
+    
+  }
+})
+
+app.listen(8030,()=>{
+  console.log("server is running on 8030")
+})
 
 module.exports = app;
